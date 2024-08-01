@@ -55,7 +55,7 @@ Asegúrate de tener lo siguiente instalado en tu máquina local:
     Crea un archivo `.env` en el directorio raíz del proyecto y agrega tus variables de entorno. Ejemplo:
 
     ```env
-    EXPO_PUBLIC_API_URL=https://api-reactnative.onrender.com
+    EXPO_PUBLIC_API_URL='https://api-reactnative.onrender.com/api/products'
     ```
 
 2. **Iniciar la aplicación**
