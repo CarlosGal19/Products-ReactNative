@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-    baseURL: "https://api-reactnative.onrender.com/api/products",
+    baseURL: process.env.EXPO_PUBLIC_API_URL,
     headers: {
         "Content-Type": "application/json",
     },
