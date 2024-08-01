@@ -42,7 +42,9 @@ const ProductCard: FC<{ product: Product }> = ({ product }) => {
             <View style={styles.add}>
                 <Amount max={product.countInStock} amount={amount} setAmount={setAmount} />
                 <Pressable style={styles.pressable} onPress={handlePress}>
-                    <Text>Add to Cart</Text>
+                    <Text style={{
+                        fontWeight: 'bold'
+                    }}>Add to Cart</Text>
                 </Pressable>
             </View>
         </View>

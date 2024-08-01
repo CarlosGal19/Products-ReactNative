@@ -20,16 +20,15 @@ export default function App() {
                             flex: 1,
                             paddingBottom: insets.bottom,
                             paddingLeft: insets.left,
-                            paddingRight: insets.right,
-                            paddingTop: insets.top,
+                            paddingRight: insets.right
                         }}
                     >
                         <Stack
                             screenOptions={{
                                 headerStyle: {
-                                    backgroundColor: "#5facd8",
+                                    backgroundColor: "#8fc5e4",
                                 },
-                                headerTintColor: "white",
+                                headerTintColor: "black",
                                 headerTitleStyle: {
                                     fontWeight: "bold",
                                 },
