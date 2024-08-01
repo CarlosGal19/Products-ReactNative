@@ -29,7 +29,7 @@ const Cart = () => {
             />
             <View style={styles.containerSummary}>
               <Text style={styles.summaryText}>Total Items: {totalItems}</Text>
-              <Text style={styles.summaryText}>Final Pay: {finalPay}</Text>
+              <Text style={styles.summaryText}>Final Pay: ${finalPay.toFixed(2)}</Text>
               <Pressable
                 onPress={() => handlePress()}
                 style={styles.cleanCartButton}
