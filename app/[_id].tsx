@@ -2,6 +2,7 @@ import { View, Text, Image, StyleSheet, ActivityIndicator } from "react-native";
 import { FC, useEffect, useState } from "react";
 import axiosClient from "../axios/axios";
 import { useLocalSearchParams } from "expo-router";
+// import Carousel from '../components/Carousel'
 
 interface Product {
     _id: string;
@@ -55,6 +56,7 @@ const ProductCard: FC = () => {
                         style={styles.image}
                         accessibilityLabel={prod.name}
                     />
+                    {/* <Carousel imageUrls={prod.images} /> */}
                     <Text style={styles.name}>{prod.name}</Text>
                     <Text style={styles.price}>${prod.price}</Text>
                     <Text style={styles.stock}>{prod.countInStock} left in stock</Text>
