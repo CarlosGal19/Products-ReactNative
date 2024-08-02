@@ -17,7 +17,10 @@ const Cart = () => {
   return (
     <View style={styles.container}>
       {
-        !productsAdded.length && <Text style={styles.emptyText}>Your cart is empty</Text>
+        !productsAdded.length && <Text
+          className="text-center font-bold text-2xl mt-10"
+        >Your cart is empty</Text>
+
       }
       {
         loading && <Text>Loading...</Text>
