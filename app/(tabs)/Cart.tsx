@@ -8,7 +8,7 @@ import ProductCartCard from "../../components/ProductCartCard";
 
 const Cart = () => {
 
-  const { productsAdded, totalItems, finalPay, clearCart } = useCart();
+  const { productsAdded, totalItems, finalPay, clearCart, loading } = useCart();
 
   const handlePress = () => {
     clearCart();
@@ -18,6 +18,9 @@ const Cart = () => {
     <View style={styles.container}>
       {
         !productsAdded.length && <Text style={styles.emptyText}>Your cart is empty</Text>
+      }
+      {
+        loading && <Text>Loading...</Text>
       }
       {
         productsAdded && (

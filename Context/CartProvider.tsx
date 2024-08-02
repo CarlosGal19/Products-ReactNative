@@ -1,4 +1,5 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CartContext = createContext<any>(null);
 
@@ -12,58 +13,106 @@ interface Product {
     price: number;
     image: string;
     countInStock: number;
-    amount: number
+    amount: number;
 }
 
 const CartProvider = ({ children }: CartProviderProps) => {
+
     const [productsAdded, setProductsAdded] = useState<Product[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [finalPay, setFinalPay] = useState<number>(0);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        const getFromStorage = async () => {
+            try {
+                const cart = await AsyncStorage.getItem("cart");
+                const items = await AsyncStorage.getItem("totalItems");
+                const pay = await AsyncStorage.getItem("finalPay");
+
+                if (cart) {
+                    setProductsAdded(JSON.parse(cart));
+                }
+                if (items) {
+                    setTotalItems(JSON.parse(items));
+                }
+                if (pay) {
+                    setFinalPay(JSON.parse(pay));
+                }
+            } catch (error) {
+                alert("An error occurred while trying to get the cart from storage");
+            } finally {
+                setLoading(false);
+            }
+        };
+        getFromStorage();
+    }, []);
+
+    useEffect(() => {
+        const saveToStorage = async () => {
+            try {
+                await AsyncStorage.setItem("cart", JSON.stringify(productsAdded));
+                await AsyncStorage.setItem("totalItems", JSON.stringify(totalItems));
+                await AsyncStorage.setItem("finalPay", JSON.stringify(finalPay));
+            } catch (error) {
+                console.error("Error saving cart data to storage:", error);
+            }
+        };
+        saveToStorage();
+    }, [productsAdded, totalItems, finalPay]);
 
     const addCart = (product: Product) => {
-        const productExist = productsAdded.find(p => p._id === product._id);
-        if (productExist) {
-            // If the addition of the amount of the product exceeds the stock, set the amount to the stock
-            if (productExist.amount + product.amount > product.countInStock) {
-                setProductsAdded(productsAdded.map(p => p._id === product._id ? { ...p, amount: product.countInStock } : p));
-                setTotalItems(totalItems + product.countInStock - productExist.amount);
-                setFinalPay(finalPay + product.price * (product.countInStock - productExist.amount));
-                return;
+        setProductsAdded(prev => {
+            const productExist = prev.find(p => p._id === product._id);
+            if (productExist) {
+                if (productExist.amount + product.amount > product.countInStock) {
+                    const updatedProducts = prev.map(p => p._id === product._id ? { ...p, amount: product.countInStock } : p);
+                    const totalItemsDiff = product.countInStock - productExist.amount;
+                    setTotalItems(prevTotal => prevTotal + totalItemsDiff);
+                    setFinalPay(prevFinal => prevFinal + product.price * totalItemsDiff);
+                    return updatedProducts;
+                }
+                const updatedProducts = prev.map(p => p._id === product._id ? { ...p, amount: p.amount + product.amount } : p);
+                setTotalItems(prevTotal => prevTotal + product.amount);
+                setFinalPay(prevFinal => prevFinal + product.price * product.amount);
+                return updatedProducts;
             }
-            // If the addition of the amount of the product does not exceed the stock, add the amount to the product
-            setProductsAdded(productsAdded.map(p => p._id === product._id ? { ...p, amount: p.amount + product.amount } : p));
-            setTotalItems(totalItems + product.amount);
-            setFinalPay(finalPay + product.price * product.amount);
-            return;
-        }
-        // If the product does not exist in the cart, add the product to the cart
-        setTotalItems(totalItems + product.amount);
-        setFinalPay(finalPay + product.price * product.amount);
-        setProductsAdded(prev => [...prev, product]);
-        return;
+            setTotalItems(prevTotal => prevTotal + product.amount);
+            setFinalPay(prevFinal => prevFinal + product.price * product.amount);
+            return [...prev, product];
+        });
     };
 
     const removeCart = (productId: string) => {
-        const product = productsAdded.find(p => p._id === productId);
-        setTotalItems(totalItems - product.amount);
-        setFinalPay(finalPay - product.price * product.amount);
-        setProductsAdded(productsAdded.filter(p => p._id !== productId));
-        return;
+        setProductsAdded(prev => {
+            const product = prev.find(p => p._id === productId);
+            if (product) {
+                setTotalItems(prevTotal => prevTotal - product.amount);
+                setFinalPay(prevFinal => prevFinal - product.price * product.amount);
+            }
+            return prev.filter(p => p._id !== productId);
+        });
     };
 
-    const clearCart = () => {
+    const clearCart = async () => {
         setProductsAdded([]);
-        setFinalPay(0);
         setTotalItems(0);
-        return;
+        setFinalPay(0);
+        try {
+            await AsyncStorage.removeItem("cart");
+            await AsyncStorage.removeItem("totalItems");
+            await AsyncStorage.removeItem("finalPay");
+        } catch (error) {
+            console.error("Error clearing cart data from storage:", error);
+        }
     };
 
     return (
-        <CartContext.Provider value={{ productsAdded, totalItems, finalPay, addCart, removeCart, clearCart }}>
+        <CartContext.Provider value={{ productsAdded, totalItems, finalPay, addCart, removeCart, clearCart, loading }}>
             {children}
         </CartContext.Provider>
     );
-
-}
+};
 
 export { CartProvider, CartContext };
+
