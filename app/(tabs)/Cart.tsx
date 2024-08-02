@@ -18,7 +18,7 @@ const Cart = () => {
     <View style={styles.container}>
       {
         !productsAdded.length && <Text
-          className="text-center font-bold text-2xl mt-10"
+          style={styles.emptyText}
         >Your cart is empty</Text>
 
       }
