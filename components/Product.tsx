@@ -22,7 +22,7 @@ const ProductCard: FC<{ product: Product }> = ({ product }) => {
 
     const handlePress = () => {
         const productWithAmount = { ...product, amount };
-        addCart(productWithAmount, product.countInStock);
+        addCart(productWithAmount);
         alert(`${product.name} added to cart with ${amount} amount`);
     };
 

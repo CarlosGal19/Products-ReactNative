@@ -20,7 +20,7 @@ const CartProvider = ({ children }: CartProviderProps) => {
     const [totalItems, setTotalItems] = useState<number>(0);
     const [finalPay, setFinalPay] = useState<number>(0);
 
-    const addCart = (product: Product, max: number) => {
+    const addCart = (product: Product) => {
         const productExist = productsAdded.find(p => p._id === product._id);
         if (productExist) {
             // If the addition of the amount of the product exceeds the stock, set the amount to the stock
