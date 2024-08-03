@@ -14,6 +14,7 @@ interface Product {
     image: string;
     countInStock: number;
     amount: number;
+    shipping: number;
 }
 
 const CartProvider = ({ children }: CartProviderProps) => {
@@ -21,6 +22,7 @@ const CartProvider = ({ children }: CartProviderProps) => {
     const [productsAdded, setProductsAdded] = useState<Product[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [finalPay, setFinalPay] = useState<number>(0);
+    const [finalShipping, setfinalShipping] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
@@ -29,6 +31,7 @@ const CartProvider = ({ children }: CartProviderProps) => {
                 const cart = await AsyncStorage.getItem("cart");
                 const items = await AsyncStorage.getItem("totalItems");
                 const pay = await AsyncStorage.getItem("finalPay");
+                const ship = await AsyncStorage.getItem("shipping");
 
                 if (cart) {
                     setProductsAdded(JSON.parse(cart));
@@ -38,6 +41,9 @@ const CartProvider = ({ children }: CartProviderProps) => {
                 }
                 if (pay) {
                     setFinalPay(JSON.parse(pay));
+                }
+                if (ship) {
+                    setfinalShipping(JSON.parse(ship));
                 }
             } catch (error) {
                 alert("An error occurred while trying to get the cart from storage");
@@ -54,12 +60,13 @@ const CartProvider = ({ children }: CartProviderProps) => {
                 await AsyncStorage.setItem("cart", JSON.stringify(productsAdded));
                 await AsyncStorage.setItem("totalItems", JSON.stringify(totalItems));
                 await AsyncStorage.setItem("finalPay", JSON.stringify(finalPay));
+                await AsyncStorage.setItem("shipping", JSON.stringify(finalShipping));
             } catch (error) {
                 console.error("Error saving cart data to storage:", error);
             }
         };
         saveToStorage();
-    }, [productsAdded, totalItems, finalPay]);
+    }, [productsAdded, totalItems, finalPay, finalShipping]);
 
     const addCart = (product: Product) => {
         setProductsAdded(prev => {
@@ -70,15 +77,33 @@ const CartProvider = ({ children }: CartProviderProps) => {
                     const totalItemsDiff = product.countInStock - productExist.amount;
                     setTotalItems(prevTotal => prevTotal + totalItemsDiff);
                     setFinalPay(prevFinal => prevFinal + product.price * totalItemsDiff);
+                    setfinalShipping(prevShipping => {
+                        if (productsAdded.length >= 2) {
+                            return (prevShipping + product.shipping) * 0.7
+                        }
+                        return prevShipping + product.shipping
+                    });
                     return updatedProducts;
                 }
                 const updatedProducts = prev.map(p => p._id === product._id ? { ...p, amount: p.amount + product.amount } : p);
                 setTotalItems(prevTotal => prevTotal + product.amount);
                 setFinalPay(prevFinal => prevFinal + product.price * product.amount);
+                setfinalShipping(prevShipping => {
+                    if (productsAdded.length >= 2) {
+                        return (prevShipping + product.shipping) * 0.7
+                    }
+                    return prevShipping + product.shipping
+                });
                 return updatedProducts;
             }
             setTotalItems(prevTotal => prevTotal + product.amount);
             setFinalPay(prevFinal => prevFinal + product.price * product.amount);
+            setfinalShipping(prevShipping => {
+                if (productsAdded.length >= 2) {
+                    return (prevShipping + product.shipping) * 0.7
+                }
+                return prevShipping + product.shipping
+            });
             return [...prev, product];
         });
     };
@@ -89,6 +114,7 @@ const CartProvider = ({ children }: CartProviderProps) => {
             if (product) {
                 setTotalItems(prevTotal => prevTotal - product.amount);
                 setFinalPay(prevFinal => prevFinal - product.price * product.amount);
+                setfinalShipping(prevShipping => prevShipping - product.shipping);
             }
             return prev.filter(p => p._id !== productId);
         });
@@ -98,21 +124,22 @@ const CartProvider = ({ children }: CartProviderProps) => {
         setProductsAdded([]);
         setTotalItems(0);
         setFinalPay(0);
+        setfinalShipping(0);
         try {
             await AsyncStorage.removeItem("cart");
             await AsyncStorage.removeItem("totalItems");
             await AsyncStorage.removeItem("finalPay");
+            await AsyncStorage.removeItem("shipping");
         } catch (error) {
             console.error("Error clearing cart data from storage:", error);
         }
     };
 
     return (
-        <CartContext.Provider value={{ productsAdded, totalItems, finalPay, addCart, removeCart, clearCart, loading }}>
+        <CartContext.Provider value={{ productsAdded, totalItems, finalPay, addCart, removeCart, clearCart, loading, finalShipping }}>
             {children}
         </CartContext.Provider>
     );
 };
 
 export { CartProvider, CartContext };
-
