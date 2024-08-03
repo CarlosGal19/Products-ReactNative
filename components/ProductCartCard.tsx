@@ -23,6 +23,7 @@ const ProductCartCard = ({ product }: { product: Product }) => {
       <Text style={styles.price}>${product.price}</Text>
       <Text style={styles.amount}>Amount: {product.amount}</Text>
       <Text style={styles.amount}>Total: ${(product.price * product.amount).toFixed(2)}</Text>
+      <Text style={styles.amount}>Shipping: ${(product.shipping).toFixed(2)}</Text>
       <Pressable style={styles.button} onPress={handlePress}>
         <FontAwesome name="remove" size={24} color="black" />
       </Pressable>
