@@ -13,6 +13,7 @@ export interface Product {
     countInStock: number;
     amount: number;
     description: string;
+    shipping: number;
 }
 
 const App: FC = () => {
