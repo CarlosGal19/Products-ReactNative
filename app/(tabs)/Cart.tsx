@@ -8,7 +8,7 @@ import ProductCartCard from "../../components/ProductCartCard";
 
 const Cart = () => {
 
-  const { productsAdded, totalItems, finalPay, clearCart, loading } = useCart();
+  const { productsAdded, totalItems, finalPay, clearCart, loading, finalShipping } = useCart();
 
   const handlePress = () => {
     clearCart();
@@ -36,6 +36,7 @@ const Cart = () => {
             <View style={styles.containerSummary}>
               <Text style={styles.summaryText}>Total Items: {totalItems}</Text>
               <Text style={styles.summaryText}>Final Pay: ${finalPay.toFixed(2)}</Text>
+              <Text style={styles.summaryText}>Final Shipping: ${finalShipping.toFixed(2)}</Text>
               <Pressable
                 onPress={() => handlePress()}
                 style={styles.cleanCartButton}
