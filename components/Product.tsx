@@ -23,8 +23,6 @@ const ProductCard: FC<{ product: Product }> = ({ product }) => {
 
     const handlePress = () => {
         let finalProduct = { ...product, amount };
-        const shipping = amount * 50;
-        finalProduct = { ...finalProduct, shipping };
 
         addCart(finalProduct);
     };
