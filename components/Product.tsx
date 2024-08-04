@@ -23,22 +23,7 @@ const ProductCard: FC<{ product: Product }> = ({ product }) => {
 
     const handlePress = () => {
         let finalProduct = { ...product, amount };
-        let shipping = amount * 50;
-        let discount = 0;
-
-        if (amount >= 3 && amount < 8) {
-            // Descuento del 5% por cada artículo adicional a partir de 3 artículos
-            discount = (amount - 2) * 0.05;
-            if (discount > 0.25) {
-                discount = 0.25; // Limitar el descuento a 25%
-            }
-        } else if (amount >= 7) {
-            // Descuento del 30% si hay 7 artículos o más
-            discount = 0.30;
-        }
-
-        // Aplicar descuento al costo de envío
-        shipping = shipping - (shipping * discount);
+        const shipping = amount * 50;
         finalProduct = { ...finalProduct, shipping };
 
         addCart(finalProduct);
