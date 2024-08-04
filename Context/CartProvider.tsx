@@ -1,6 +1,8 @@
 import { createContext, useState, useEffect } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { calculateShippingCost, calculateFinalShipping } from '../helpers/helpers'
+
 const CartContext = createContext<any>(null);
 
 interface CartProviderProps {
@@ -22,7 +24,7 @@ const CartProvider = ({ children }: CartProviderProps) => {
     const [productsAdded, setProductsAdded] = useState<Product[]>([]);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [finalPay, setFinalPay] = useState<number>(0);
-    const [finalShipping, setfinalShipping] = useState<number>(0);
+    const [finalShipping, setFinalShipping] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
@@ -43,7 +45,7 @@ const CartProvider = ({ children }: CartProviderProps) => {
                     setFinalPay(JSON.parse(pay));
                 }
                 if (ship) {
-                    setfinalShipping(JSON.parse(ship));
+                    setFinalShipping(JSON.parse(ship));
                 }
             } catch (error) {
                 alert("An error occurred while trying to get the cart from storage");
@@ -68,45 +70,40 @@ const CartProvider = ({ children }: CartProviderProps) => {
         saveToStorage();
     }, [productsAdded, totalItems, finalPay, finalShipping]);
 
-    const addCart = (product: Product) => {
+    const addCart = (product : Product) => {
+        setTotalItems(prev => prev + product.amount);
+        setFinalPay(prev => prev + product.price * product.amount);
+
+        const productExists = productsAdded.find(p => p._id === product._id);
+
+        if (!productExists) {
+            product.shipping = calculateShippingCost(product.amount);
+            setFinalShipping(prev => calculateFinalShipping(prev, product.shipping, productsAdded.length + 1));
+            setProductsAdded(prev => [...prev, product]);
+            alert("Product added to cart");
+            return;
+        }
+
+        if (productExists.amount + product.amount > product.countInStock) {
+            alert("You can't add more than the available stock");
+            return;
+        }
+
+        const previousShipping = productExists.shipping;
+        const previousAmount = productExists.amount;
+
+        setFinalShipping(prev => calculateFinalShipping(prev - previousShipping, calculateShippingCost(product.amount + previousAmount), productsAdded.length + 1));
+
+        productExists.amount += product.amount;
+        productExists.shipping = calculateShippingCost(productExists.amount);
+
         setProductsAdded(prev => {
-            const productExist = prev.find(p => p._id === product._id);
-            if (productExist) {
-                if (productExist.amount + product.amount > product.countInStock) {
-                    const updatedProducts = prev.map(p => p._id === product._id ? { ...p, amount: product.countInStock } : p);
-                    const totalItemsDiff = product.countInStock - productExist.amount;
-                    setTotalItems(prevTotal => prevTotal + totalItemsDiff);
-                    setFinalPay(prevFinal => prevFinal + product.price * totalItemsDiff);
-                    setfinalShipping(prevShipping => {
-                        if (productsAdded.length >= 2) {
-                            return (prevShipping + product.shipping) * 0.7
-                        }
-                        return prevShipping + product.shipping
-                    });
-                    return updatedProducts;
-                }
-                const updatedProducts = prev.map(p => p._id === product._id ? { ...p, amount: p.amount + product.amount } : p);
-                setTotalItems(prevTotal => prevTotal + product.amount);
-                setFinalPay(prevFinal => prevFinal + product.price * product.amount);
-                setfinalShipping(prevShipping => {
-                    if (productsAdded.length >= 2) {
-                        return (prevShipping + product.shipping) * 0.7
-                    }
-                    return prevShipping + product.shipping
-                });
-                return updatedProducts;
-            }
-            setTotalItems(prevTotal => prevTotal + product.amount);
-            setFinalPay(prevFinal => prevFinal + product.price * product.amount);
-            setfinalShipping(prevShipping => {
-                if (productsAdded.length >= 2) {
-                    return (prevShipping + product.shipping) * 0.7
-                }
-                return prevShipping + product.shipping
-            });
-            return [...prev, product];
+            return prev.map( p => p._id === product._id ? productExists : p);
         });
-    };
+        alert("Product added to cart");
+        return;
+    }
+
 
     const removeCart = (productId: string) => {
         setProductsAdded(prev => {
@@ -114,7 +111,7 @@ const CartProvider = ({ children }: CartProviderProps) => {
             if (product) {
                 setTotalItems(prevTotal => prevTotal - product.amount);
                 setFinalPay(prevFinal => prevFinal - product.price * product.amount);
-                setfinalShipping(prevShipping => prevShipping - product.shipping);
+                setFinalShipping(prevShipping => prevShipping - product.shipping);
             }
             return prev.filter(p => p._id !== productId);
         });
@@ -124,7 +121,7 @@ const CartProvider = ({ children }: CartProviderProps) => {
         setProductsAdded([]);
         setTotalItems(0);
         setFinalPay(0);
-        setfinalShipping(0);
+        setFinalShipping(0);
         try {
             await AsyncStorage.removeItem("cart");
             await AsyncStorage.removeItem("totalItems");
