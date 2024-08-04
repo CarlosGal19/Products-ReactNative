@@ -4,11 +4,11 @@
     "slug": "Frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/pinky-brain.png",
     "userInterfaceStyle": "light",
     "scheme": "products",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/pinky-brain.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,12 +17,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/pinky-brain.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/pinky-brain.png"
     }
   }
 }
